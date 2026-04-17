@@ -1,0 +1,110 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    // Collection: outlets
+    // Fields: id, name, location, revenue, churnRate, atRiskCustomers
+    //
+    // Collection: products
+    // Fields: id, name, category, margin, outreach, unitsSold, outletIds, imageUrl
+    //
+    // Collection: customers
+    // Fields: id, email, churnProbability, lastVisit, totalSpend
+    //
+    // Collection: subscriptions
+    // Fields: uid, plan, trialEndsAt, isActive
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         (request.auth.token.email == "aashishb.l.1234@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidString(field, maxLen) {
+      return request.resource.data[field] is string && request.resource.data[field].size() <= maxLen;
+    }
+
+    function isValidNumber(field) {
+      return request.resource.data[field] is number;
+    }
+
+    // Domain Validators
+    function isValidOutlet(data) {
+      return data.keys().hasAll(['id', 'name']) &&
+             data.id is string && data.name is string && data.name.size() < 100;
+    }
+
+    function isValidProduct(data) {
+      return data.keys().hasAll(['id', 'name', 'margin']) &&
+             data.id is string && data.name is string && data.margin is number;
+    }
+
+    function isValidSubscription(data) {
+      return data.keys().hasAll(['uid', 'plan']) &&
+             data.uid == request.auth.uid &&
+             data.plan in ['free_trial', 'premium'];
+    }
+
+    // Rules
+    match /outlets/{outletId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /products/{productId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /customers/{customerId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /subscriptions/{uid} {
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid) && isValidSubscription(request.resource.data);
+      allow update: if isOwner(uid) && isValidSubscription(request.resource.data) && 
+                      request.resource.data.plan == resource.data.plan; // Can't change plan without admin/payment
+    }
+
+    match /inventory/{itemId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /dealers/{dealerId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /reviews/{reviewId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated(); // Customers can leave reviews
+      allow update, delete: if isAdmin();
+    }
+
+    match /menuInnovations/{innovationId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && request.resource.data.role == 'client';
+      allow update: if isOwner(userId) && request.resource.data.role == resource.data.role;
+    }
+  }
+}

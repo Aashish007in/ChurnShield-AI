@@ -1,0 +1,147 @@
+{
+  "entities": {
+    "Outlet": {
+      "title": "Outlet",
+      "description": "A retail location or franchise unit.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique outlet ID." },
+        "name": { "type": "string", "description": "Outlet name (e.g., Koramangala)." },
+        "location": { "type": "string", "description": "City/Area." },
+        "revenue": { "type": "number", "description": "Total revenue." },
+        "churnRate": { "type": "number", "description": "Current churn percentage." },
+        "atRiskCustomers": { "type": "integer", "description": "Count of customers likely to churn." }
+      },
+      "required": ["id", "name"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Inventory item with margin and outreach stats.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Product SKU." },
+        "name": { "type": "string", "description": "Product name." },
+        "category": { "type": "string", "description": "Category (e.g., Beverages)." },
+        "imageUrl": { "type": "string", "description": "Product photo URL." },
+        "margin": { "type": "number", "description": "Profit margin percentage." },
+        "outreach": { "type": "number", "description": "Reach/popularity score." },
+        "unitsSold": { "type": "integer", "description": "Total units sold across outlets." },
+        "outletIds": { "type": "array", "items": { "type": "string" }, "description": "Outlets where sold." }
+      },
+      "required": ["id", "name", "margin"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Retail customer profile.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique customer ID." },
+        "email": { "type": "string", "description": "Customer email." },
+        "churnProbability": { "type": "number", "description": "AI-calculated churn risk (0-1)." },
+        "lastVisit": { "type": "string", "format": "date-time", "description": "Last transaction date." },
+        "totalSpend": { "type": "number", "description": "Lifetime value." }
+      },
+      "required": ["id", "email"]
+    },
+    "Subscription": {
+      "title": "Subscription",
+      "description": "User subscription and trial status.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID." },
+        "plan": { "type": "string", "enum": ["free_trial", "premium"], "description": "Current plan." },
+        "trialEndsAt": { "type": "string", "format": "date-time", "description": "End of 7-day trial." },
+        "isActive": { "type": "boolean", "description": "Subscription status." }
+      },
+      "required": ["uid", "plan"]
+    },
+    "InventoryItem": {
+      "title": "InventoryItem",
+      "description": "Stock levels for raw materials or products.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "stockLevel": { "type": "number" },
+        "unit": { "type": "string" },
+        "outletId": { "type": "string" }
+      },
+      "required": ["id", "name", "stockLevel"]
+    },
+    "Dealer": {
+      "title": "Dealer",
+      "description": "Suppliers and vendors.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "contact": { "type": "string" },
+        "rating": { "type": "number" }
+      },
+      "required": ["id", "name"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "Customer feedback for outlets or products.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string", "enum": ["outlet", "product"] },
+        "targetId": { "type": "string" },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "type", "targetId", "rating"]
+    },
+    "MenuInnovation": {
+      "title": "MenuInnovation",
+      "description": "New food items suggested for the menu.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "description": { "type": "string" },
+        "estimatedMargin": { "type": "number" },
+        "status": { "type": "string", "enum": ["suggested", "testing", "approved"] }
+      },
+      "required": ["id", "name"]
+    }
+  },
+  "firestore": {
+    "/outlets/{outletId}": {
+      "schema": "Outlet",
+      "description": "Collection of retail outlets."
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Collection of products across all outlets."
+    },
+    "/customers/{customerId}": {
+      "schema": "Customer",
+      "description": "Customer profiles for churn analysis."
+    },
+    "/subscriptions/{uid}": {
+      "schema": "Subscription",
+      "description": "User subscription data."
+    },
+    "/inventory/{itemId}": {
+      "schema": "InventoryItem",
+      "description": "Stock levels."
+    },
+    "/dealers/{dealerId}": {
+      "schema": "Dealer",
+      "description": "Suppliers."
+    },
+    "/reviews/{reviewId}": {
+      "schema": "Review",
+      "description": "Customer feedback."
+    },
+    "/menuInnovations/{innovationId}": {
+      "schema": "MenuInnovation",
+      "description": "New menu ideas."
+    }
+  }
+}
