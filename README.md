@@ -2,6 +2,7 @@
 
 <img width="2752" height="1536" alt="Gemini_Generated_Image_krlkoykrlkoykrlk" src="https://github.com/user-attachments/assets/14a09ac6-498a-4085-8337-94ba78e1d630" />
 </div>
+https://drive.google.com/file/d/146hNnPKyEuXFv-TfZ7mHikpAubqRraUY/view?usp=sharing
 
 # Run and deploy your AI Studio app
 
